@@ -8,10 +8,10 @@ RUN dnf -y update \
         cmake \
         make \
         wget \
-        python \
-        python3 \
+#        python \
+#        python3 \
         git \
-        ncview \
+#        ncview \
     && dnf clean all
 
 # copy the MusicBox code
