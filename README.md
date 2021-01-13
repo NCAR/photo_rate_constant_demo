@@ -2,8 +2,8 @@
 Demonstration of runtime-initialized photodecompostion rate constants in a docker container
 
 Install Docker on your machine
+Then git clone this repository and change into the directory
 ```
-git clone this repository
 docker build -t photo_rate_constant_demo .
 docker run -it photo_rate_constant_demo bash
 ```
