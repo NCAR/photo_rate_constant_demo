@@ -19,7 +19,7 @@ program photo_rate_demo
 
   real(musica_dk), parameter :: hc = 6.626068e-34_musica_dk * 2.99792458e8_musica_dk
   character(len=*), parameter :: Iam = 'photo_rate_demo: '
-  character(len=*), parameter :: wavelength_grid_filespec = '/Users/stacy/Documents/photo_rate_constant_demo/wavelength_grid.nc'
+  character(len=*), parameter :: wavelength_grid_filespec = '/photo-demo/wavelength_grid.nc'
   integer(musica_ik), parameter :: noErr = 0
   integer :: lambda, ndx
   real(musica_dk)              :: jaccum
