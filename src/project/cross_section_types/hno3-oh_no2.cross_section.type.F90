@@ -2,10 +2,10 @@
 ! SPDX-License-Identifier: Apache-2.0
 !
 !> \file
-!> This base_cross_section module
+!> This hno3->oh+no2 cross_section module
 
-!> The base_cross_section type and related functions
-module micm_base_cross_section_type
+!> The hno3->oh+no2_cross_section type and related functions
+module micm_hno3_oh_no2_cross_section_type
 
   use micm_abs_cross_section_type,     only : abs_cross_section_t
   use musica_constants,                only : musica_dk, musica_ik
@@ -13,14 +13,14 @@ module micm_base_cross_section_type
   implicit none
 
   private
-  public :: base_cross_section_t, cross_section_t
+  public :: hno3_oh_no2_cross_section_t, cross_section_t
 
   type cross_section_t
     real(musica_dk), allocatable :: array(:,:)
   end type cross_section_t
 
-  !> Calculator for base_cross_section
-  type, extends(abs_cross_section_t) :: base_cross_section_t
+  !> Calculator for hno3_oh_no2_cross_section
+  type, extends(abs_cross_section_t) :: hno3_oh_no2_cross_section_t
     !> The cross section array
     type(cross_section_t), allocatable :: cross_section(:)
   contains
@@ -30,13 +30,13 @@ module micm_base_cross_section_type
     procedure :: calculate
     !> clean up
     final     :: finalize
-  end type base_cross_section_t
+  end type hno3_oh_no2_cross_section_t
 
 contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Initialize base_cross_section_t object
+  !> Initialize hno3_oh_no2_cross_section_t object
   subroutine initialize( this, config )
 
     use musica_config,                   only : config_t
@@ -48,18 +48,20 @@ contains
 
     !> cross section configuration object
     type(config_t), intent(inout) :: config
-    !> base cross section type
-    class(base_cross_section_t), intent(inout) :: this
+    !> hno3->oh_no2 cross section type
+    class(hno3_oh_no2_cross_section_t), intent(inout) :: this
 
 !   local variables
     integer(musica_ik), parameter :: iONE = 1_musica_ik
     real(musica_dk), parameter :: rZERO = 0.0_musica_dk
     real(musica_dk), parameter :: rONE  = 1.0_musica_dk
-    character(len=*), parameter :: Iam = 'base cross section initialize: '
+    character(len=*), parameter :: Iam = 'hno3->oh+no2 cross section initialize: '
     character(len=*), parameter :: Hdr = 'XS_'
 
     type(string_t) :: netcdfFileSpec
+    type(string_t) :: addpntVal
     type(data_t), allocatable :: dataTray(:)
+    type(config_t) :: tmp_config
 
     integer(musica_ik) :: retcode
     integer(musica_ik) :: colNdx, trayNdx, nCols
@@ -68,6 +70,7 @@ contains
     real(musica_dk), allocatable :: mdl_lambda_edge(:)
     logical :: found
     character(len=:), allocatable :: msg
+    character(len=:), allocatable :: addpntKey
 
     write(*,*) Iam,'entering'
     !> get cross section netcdf filespec
@@ -97,14 +100,27 @@ tray_loop: &
         endif
 
         do colNdx = 2,nCols
-          if( dataTray(trayNdx)%scaling_factor /= rONE ) then
-            dataTray(trayNdx)%data(:,colNdx) = dataTray(trayNdx)%scaling_factor*dataTray(trayNdx)%data(:,colNdx)
+          if( colNdx == 2 ) then
+            dataTray(trayNdx)%data(:,colNdx) = 1.e-20_musica_dk*dataTray(trayNdx)%data(:,colNdx)
+          elseif( colNdx == 3 ) then
+            dataTray(trayNdx)%data(:,colNdx) = 1.e-3_musica_dk*dataTray(trayNdx)%data(:,colNdx)
           endif
 
           data_lambda = dataTray(trayNdx)%data(:,1)
           data_xsect  = dataTray(trayNdx)%data(:,colNdx)
 
-          call this%addpnts( config, data_lambda, data_xsect )
+          if( colNdx == 2 ) then
+            call this%addpnts( config, data_lambda, data_xsect )
+          elseif( colNdx == 3 ) then
+            tmp_config = config
+            addpntKey = 'lower addpnt type'
+            addpntVal = 'boundary'
+            call tmp_config%add( addpntKey, addpntVal, Iam )
+            addpntKey = 'upper addpnt type'
+            addpntVal = 'boundary'
+            call tmp_config%add( addpntKey, addpntVal, Iam )
+            call this%addpnts( tmp_config, data_lambda, data_xsect )
+          endif
           mdl_lambda_edge = wavelength_grid%wedge
           call inter2(xto=mdl_lambda_edge,yto=this%cross_section(trayNdx)%array(:,colNdx-1), &
                       xfrom=data_lambda,yfrom=data_xsect,ierr=retcode)
@@ -126,16 +142,18 @@ tray_loop: &
 
     !> Calculated cross section
     real(kind=musica_dk)              :: cross_section(wavelength_grid%nwave)
-    !> base cross section
-    class(base_cross_section_t), intent(in) :: this
+    !> hno3->oh+no2 cross section
+    class(hno3_oh_no2_cross_section_t), intent(in) :: this
     !> Environmental conditions
     class(environment_t), intent(in) :: environment
 
-    character(len=*), parameter :: Iam = 'base cross section calculate: '
+    character(len=*), parameter :: Iam = 'hno3->oh+no2 cross section calculate: '
+    real(musica_dk) :: Temp
 
     write(*,*) Iam,'entering'
 
-    cross_section = this%cross_section(1)%array(:,1)
+    Temp = environment%temperature - 298._musica_dk 
+    cross_section = this%cross_section(1)%array(:,1)*exp( this%cross_section(1)%array(:,2)*Temp )
 
     write(*,*) Iam,'exiting'
 
@@ -146,9 +164,9 @@ tray_loop: &
 !> finalize the cross section type
    subroutine finalize( this )
 
-   type(base_cross_section_t), intent(inout) :: this
+   type(hno3_oh_no2_cross_section_t), intent(inout) :: this
 
-   character(len=*), parameter :: Iam = 'base cross section finalize: '
+   character(len=*), parameter :: Iam = 'hno3->oh+no2 cross section finalize: '
    integer(musica_ik) :: ndx
 
    write(*,*) Iam,'entering'
@@ -161,4 +179,4 @@ tray_loop: &
    
    end subroutine finalize
 
-end module micm_base_cross_section_type
+end module micm_hno3_oh_no2_cross_section_type

@@ -9,6 +9,9 @@ module micm_cross_section_factory
 
   use micm_abs_cross_section_type,     only : abs_cross_section_t
   use micm_base_cross_section_type,    only : base_cross_section_t
+  use micm_n2o5_no2_no3_cross_section_type, only : n2o5_no2_no3_cross_section_t
+  use micm_cl2_cl_cl_cross_section_type, only : cl2_cl_cl_cross_section_t
+  use micm_hno3_oh_no2_cross_section_type, only : hno3_oh_no2_cross_section_t
 
   implicit none
 
@@ -19,14 +22,6 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !> Builder of cross section calculators
-  !!
-  !! At minimum, the \c config argument must include a top-level key-value
-  !! pair "type" whose value is a valid rate constant type. Currently, these
-  !! are:
-  !! - "foo"
-  !! - "bar"
-  !!
   function cross_section_builder( config ) result( new_cross_section_t )
 
     use musica_assert,                 only : die_msg
@@ -47,11 +42,18 @@ contains
 
     select case( cross_section_type%to_char() )
       case( 'base cross section' )
-        new_cross_section_t => base_cross_section_t( config )
+        allocate( base_cross_section_t :: new_cross_section_t )
+      case( 'N2O5+hv->NO2+NO3 cross section' )
+        allocate( n2o5_no2_no3_cross_section_t :: new_cross_section_t )
+      case( 'Cl2+hv->Cl+Cl cross section' )
+        allocate( cl2_cl_cl_cross_section_t :: new_cross_section_t )
+      case( 'HNO3+hv->OH+NO2 cross section' )
+        allocate( hno3_oh_no2_cross_section_t :: new_cross_section_t )
       case default
         call die_msg( 450768214, "Invalid cross section type: '"//              &
                                  cross_section_type%to_char( )//"'" )
     end select
+    call new_cross_section_t%initialize( config )
     write(*,*) Iam,'exiting'
 
   end function cross_section_builder

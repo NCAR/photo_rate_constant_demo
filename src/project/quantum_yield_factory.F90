@@ -10,7 +10,6 @@ module micm_quantum_yield_factory
   use micm_abs_quantum_yield_type,              only : abs_quantum_yield_t
   use micm_base_quantum_yield_type,             only : base_quantum_yield_t
   use micm_ch3cho_ch3_hco_quantum_yield_type,   only : ch3cho_ch3_hco_quantum_yield_t
-  use micm_ch3cho_ch4_co_quantum_yield_type,    only : ch3cho_ch4_co_quantum_yield_t
 
   implicit none
 
@@ -37,20 +36,19 @@ contains
     character(len=*), parameter :: Iam = 'quantum yield builder: '
 
     write(*,*) Iam,'entering'
-    new_quantum_yield_t => null( )
+    new_quantum_yield_t => null()
     call config%get( 'quantum yield type', quantum_yield_type, Iam )
 
     select case( quantum_yield_type%to_char() )
       case( 'base quantum yield' )
-        new_quantum_yield_t => base_quantum_yield_t( config )
+        allocate( base_quantum_yield_t :: new_quantum_yield_t )
       case( 'CH3CHO+hv->CH3+HCO_qy_t' )
-        new_quantum_yield_t => ch3cho_ch3_hco_quantum_yield_t( config )
-      case( 'CH3CHO+hv->CH4+CO_qy_t' )
-        new_quantum_yield_t => ch3cho_ch4_co_quantum_yield_t( config )
+        allocate( ch3cho_ch3_hco_quantum_yield_t :: new_quantum_yield_t )
       case default
         call die_msg( 450768214, "Invalid quantum yield type: '"//              &
                                  quantum_yield_type%to_char( )//"'" )
     end select
+    call new_quantum_yield_t%initialize( config )
     write(*,*) Iam,'exiting'
 
   end function quantum_yield_builder

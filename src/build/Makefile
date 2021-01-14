@@ -30,9 +30,11 @@ EXEC = photo_rate_demo
 
 OBJS = constants.o string.o assert.o convert.o environment.o iterator.o config.o \
        wavelength.o netcdf_util.o photo_utils.o abstract.cross_section.type.o \
-       base.cross_section.type.o  abstract.quantum_yield.type.o base.quantum_yield.type.o \
-       ch3cho-ch3_hco.o ch3cho-ch4_co.o \
+       base.cross_section.type.o  hno3-oh_no2.cross_section.type.o n2o5-no2_no3.cross_section.type.o cl2-cl_cl.cross_section.type.o \
+       abstract.quantum_yield.type.o base.quantum_yield.type.o \
+       ch3cho-ch3_hco.quantum_yield.type.o \
        cross_section_factory.o quantum_yield_factory.o photo_kinetics.o photo_driver.o
+
 
 VPATH = ../core:../project:../project/cross_section_types:../project/quantum_yield_types
 
@@ -46,7 +48,7 @@ ${EXEC} :       ${OBJS}
 		${F90} ${FFLAGS} -c ${INCLUDE_MODULES} $<
 
 cleanup:
-		rm -f ${OBJS} *.mod
+	 	rm -f ${OBJS} *.mod *.smod
 
 clean:
-		rm -f core ${EXEC} ${OBJS} *.mod
+		rm -f core ${EXEC} ${OBJS} *.mod *.smod

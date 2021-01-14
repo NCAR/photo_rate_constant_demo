@@ -19,6 +19,7 @@ module micm_abs_cross_section_type
   type, abstract :: abs_cross_section_t
   contains
     !> Calculate the photo rate cross section
+    procedure(initial),   deferred :: initialize
     procedure(calculate), deferred :: calculate
     procedure                      :: addpnts
   end type abs_cross_section_t
@@ -47,6 +48,17 @@ interface
     class(environment_t), intent(in)  :: environment
  end function calculate
 
+  !> Initialize the base cross section type
+  subroutine initial( this, config )
+    use musica_config,                    only : config_t
+    import abs_cross_section_t
+
+    !> Cross section calculator
+    class(abs_cross_section_t), intent(inout) :: this
+    !> Environmental conditions
+    type(config_t), intent(inout) :: config
+ end subroutine initial
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 end interface
@@ -69,6 +81,7 @@ contains
     character(len=*), parameter :: Iam = 'cross_section; addpnts: '
 
     integer(musica_ik) :: nRows
+    real(musica_dk) :: lowerLambda, upperLambda
     real(musica_dk) :: lowerVal, upperVal
     real(musica_dk) :: addpnt_val_
     type(string_t)  :: addpnt_type_
@@ -78,7 +91,8 @@ contains
 
     !> add endpoints to data arrays; first the lower bound
     nRows = size(data_lambda)
-    lowerVal = data_lambda(1) ; upperVal = data_lambda(nRows)
+    lowerLambda = data_lambda(1) ; upperLambda = data_lambda(nRows)
+    lowerVal    = data_xsect(1)  ; upperVal    = data_xsect(nRows)
     call config%get( 'lower addpnt type', addpnt_type_, Iam, found=found )
     if( .not. found ) then
       call config%get( 'lower addpnt value', addpnt_val_, Iam, found=found )
@@ -86,11 +100,11 @@ contains
         addpnt_val_ = rZERO
       endif
     else
-        addpnt_val_ = data_xsect(1)
+      addpnt_val_ = lowerVal
     endif
 
     call addpnt(x=data_lambda,y=data_xsect,xnew=rZERO,ynew=addpnt_val_) 
-    call addpnt(x=data_lambda,y=data_xsect,xnew=(rONE-deltax)*lowerVal,ynew=addpnt_val_) 
+    call addpnt(x=data_lambda,y=data_xsect,xnew=(rONE-deltax)*lowerLambda,ynew=addpnt_val_) 
     !> add endpoints to data arrays; now the upper bound
     call config%get( 'upper addpnt type', addpnt_type_, Iam, found=found )
     if( .not. found ) then
@@ -99,10 +113,10 @@ contains
         addpnt_val_ = rZERO
       endif
     else
-        addpnt_val_ = data_xsect(nRows)
+      addpnt_val_ = upperVal
     endif
 
-    call addpnt(x=data_lambda,y=data_xsect,xnew=(rONE+deltax)*upperVal,ynew=addpnt_val_) 
+    call addpnt(x=data_lambda,y=data_xsect,xnew=(rONE+deltax)*upperLambda,ynew=addpnt_val_) 
     call addpnt(x=data_lambda,y=data_xsect,xnew=1.e38_musica_dk,ynew=addpnt_val_) 
 
     write(*,*) Iam,'exiting'

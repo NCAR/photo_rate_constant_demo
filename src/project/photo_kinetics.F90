@@ -23,9 +23,10 @@ module micm_photo_kinetics
     !> Photo rate constant calculators
     type(abs_cross_section_ptr), allocatable :: cross_section_objs_(:)
     type(abs_quantum_yield_ptr), allocatable :: quantum_yield_objs_(:)
-    !> Current photo decomp values
+    !> Current photo rate constant values
     real(kind=musica_dk), allocatable :: cross_section_values_(:,:)
     real(kind=musica_dk), allocatable :: quantum_yield_values_(:,:)
+    real(kind=musica_dk), allocatable :: rate_constant_alias_factor_(:)
   contains
     !> Update the object for new environmental conditions
     procedure :: update_for_new_environmental_state
@@ -61,7 +62,7 @@ contains
     !> local variables
     integer(musica_ik), parameter :: noErr = 0
 
-    real(musica_rk) :: quantum_yield_constant
+    real(musica_dk) :: rate_aliasing_factor
     integer :: nSize
     character(len=*), parameter :: Iam = "Photo kinetics constructor: "
     type(config_t) :: reaction_set, reaction_config
@@ -80,6 +81,7 @@ contains
 
     allocate( new_obj%cross_section_objs_(0) )
     allocate( new_obj%quantum_yield_objs_(0) )
+    allocate( new_obj%rate_constant_alias_factor_(0) )
 
     jsonkey = 'photo dissociation rate constants'
     call config%get( jsonkey, reaction_set, Iam )
@@ -104,6 +106,14 @@ contains
       call reaction_config%get( "quantum yield", quantum_yield_config, Iam )
       quantum_yield_ptr%val_ => quantum_yield_builder( quantum_yield_config )
       new_obj%quantum_yield_objs_ = [new_obj%quantum_yield_objs_,quantum_yield_ptr]
+!-----------------------------------------------------------------------------
+!> finally "aliasing" factor
+!-----------------------------------------------------------------------------
+      call reaction_config%get( "rate constant alias factor", rate_aliasing_factor, Iam, found=found )
+      if( .not. found ) then
+        rate_aliasing_factor = 1.0_musica_dk
+      endif
+      new_obj%rate_constant_alias_factor_ = [new_obj%rate_constant_alias_factor_,rate_aliasing_factor]
     end do
 
     deallocate( iter )
@@ -201,6 +211,9 @@ contains
     end if
     if( allocated( this%quantum_yield_objs_ ) ) then
       deallocate( this%cross_section_objs_ )
+    end if
+    if( allocated( this%rate_constant_alias_factor_ ) ) then
+      deallocate( this%rate_constant_alias_factor_ )
     end if
 
   end subroutine finalize
