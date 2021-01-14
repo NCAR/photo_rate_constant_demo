@@ -32,7 +32,7 @@ OBJS = constants.o string.o assert.o convert.o environment.o iterator.o config.o
        wavelength.o netcdf_util.o photo_utils.o abstract.cross_section.type.o \
        base.cross_section.type.o  hno3-oh_no2.cross_section.type.o n2o5-no2_no3.cross_section.type.o cl2-cl_cl.cross_section.type.o \
        abstract.quantum_yield.type.o base.quantum_yield.type.o \
-       ch3cho-ch3_hco.cross_section.type.o ch3cho-ch3_hco.quantum_yield.type.o \
+       ch3cho-ch3_hco.quantum_yield.type.o \
        cross_section_factory.o quantum_yield_factory.o photo_kinetics.o photo_driver.o
 
 
