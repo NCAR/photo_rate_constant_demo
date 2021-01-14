@@ -17,12 +17,7 @@ cd photo-demo/
 
 The expected output follows
 ```
- photo_rate_demo: Opened and read config file photo.config.json
-  
- Photo kinetics constructor: key = CH3CHO+hv->CH3+HCO
- cross section builder: entering
- base cross_section constructor: entering
- ERROR:initialize /Users/stacy/Documents/Python_dev/Sandbox/XSQY/Data/XSQY/CH3CHO_cross_section.nc could not be created
- read_netcdf_file: retcode from initialize =            2
-STOP FileOpenError
+ photo_rate_demo: Photorate constants at the top of the atmosphere (1/s)
+  2.1640320E-05  5.9827795E-06  5.6364924E-05  3.8730194E-04  2.1947110E-03
+  3.2114790E-04  1.4738591E-04  2.5643905E-03
 ```
