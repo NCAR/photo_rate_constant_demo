@@ -69,7 +69,7 @@
          "quantum yield": {
             "quantum yield type": "base quantum yield",
             "quantum yield constant": 1.0
-         },
+         }
       },
       "Cl2+hv->Cl+Cl": {
          "cross section": {
