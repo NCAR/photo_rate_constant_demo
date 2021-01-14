@@ -4,7 +4,6 @@ program photo_rate_demo
   use micm_environment,                only : environment_t
   use musica_config,                   only : config_t
   use musica_assert,                   only : die_msg
-  use micm_photolysis_wavelength_grid, only : wavelength_grid
   use musica_constants,                only : musica_ik, musica_dk
   use micm_photolysis_wavelength_grid, only : wavelength_grid_initialize, wavelength_grid
 
@@ -22,6 +21,7 @@ program photo_rate_demo
   character(len=*), parameter :: wavelength_grid_filespec = '/photo-demo/wavelength_grid.nc'
   integer(musica_ik), parameter :: noErr = 0
   integer :: lambda, ndx
+  integer :: nphotorates
   real(musica_dk)              :: jaccum
   real(musica_dk), allocatable :: jvals_(:), dlambda(:), wrk(:)
 
@@ -83,15 +83,21 @@ program photo_rate_demo
     end associate
     wrk(:) = dlambda(:)*wavelength_grid%etf(:)*1.e-13_musica_dk*wavelength_grid%wcenter(:)/hc
     allocate(jvals_(0))
-    do ndx = 1,size(photo_kinetics%cross_section_objs_)
+    nphotorates = size(photo_kinetics%cross_section_objs_)
+    do ndx = 1,nphotorates
       jaccum = sum( photo_kinetics%cross_section_values_(:,ndx) &
                     *photo_kinetics%quantum_yield_values_(:,ndx) &
                     *wrk(:) )
+      if( photo_kinetics%rate_constant_alias_factor_(ndx) /= 1.0_musica_dk ) then
+        jaccum = photo_kinetics%rate_constant_alias_factor_(ndx)*jaccum
+      endif
       jvals_ = [jvals_,jaccum]
     enddo
 
     write(*,*) Iam,'Photorate constants at the top of the atmosphere (1/s)'
-    write(*,*) jvals_(:)
+    do ndx = 1,nphotorates,5
+      write(*,'(1p5g15.7)') jvals_(ndx:min(ndx+4,nphotorates))
+    enddo
 
     write(*,*) Iam,'Done'
 

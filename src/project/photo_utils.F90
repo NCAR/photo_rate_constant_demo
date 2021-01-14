@@ -2,11 +2,15 @@
   module photo_utils
 
   use musica_constants, only : musica_ik, musica_dk
+  use musica_assert,    only : die_msg
 
   implicit none
 
   private
   public :: inter2, addpnt
+
+  integer(musica_ik), parameter :: iONE = 1_musica_ik
+  real(musica_dk), parameter    :: rZERO = 0.0_musica_dk
 
   contains
   
@@ -47,10 +51,6 @@
       real(musica_dk), intent(out) :: yto(:)
 
 ! local:
-      integer(musica_ik), parameter :: ONE = 1_musica_ik
-      integer(musica_ik), parameter :: TWO = 2_musica_ik
-      real(musica_ik), parameter    :: ZERO = 0.0_musica_dk
-
       character(len=*), parameter :: Iam = 'inter2: '
 
       integer(musica_ik) :: nto, nfrom
@@ -63,32 +63,30 @@
       ierr   = 0_musica_ik
       nfrom  = size(xfrom)
       nto    = size(xto)
-      nfromm1 = nfrom - ONE
-      ntom1   = nto - ONE
+      nfromm1 = nfrom - iONE
+      ntom1   = nto - iONE
 
 !-----------------------------------------------------------------------------*
 !  check data grid for monotonicity
 !-----------------------------------------------------------------------------*
       if( any( xfrom(2:nfrom) <= xfrom(1:nfrom-1) ) ) then
-        write(*,*) Iam,'data grid not monotonically increasing'
-        stop 'GridErr'
+        call die_msg( 100000051, Iam//'data grid not monotonically increasing' )
       endif
 !-----------------------------------------------------------------------------*
 !  do model grid x values lie completley inside data grid x values?
 !-----------------------------------------------------------------------------*
       IF ( (xfrom(1) > xto(1)) .or. (xfrom(nfrom) < xto(nto)) ) THEN
-        write(*,*)  Iam,'Data do not span grid; Use ADDPNT to expand data and re-run.'
-        stop 'GridErr'
+        call die_msg( 100000052, Iam//'Data do not span grid; Use ADDPNT to expand data and re-run.' )
       ENDIF
 !-----------------------------------------------------------------------------*
 !  find the integral of each grid interval and use this to 
 !  calculate the average y value for the interval      
 !  xtol and xtou are the lower and upper limits of the to grid interval
 !-----------------------------------------------------------------------------*
-      jstart = ONE
+      jstart = iONE
 to_interval_loop: &
-      do i = ONE,ntom1
-        area = ZERO
+      do i = iONE,ntom1
+        area = rZERO
         xtol = xto(i)
         xtou = xto(i+1)
 !-----------------------------------------------------------------------------*
@@ -119,7 +117,7 @@ to_interval_loop: &
             a2 = MIN(xfrom(k+1),xtou)
 !  if points coincide, contribution is zero
             if (xfrom(k+1) == xfrom(k)) then
-              darea = ZERO
+              darea = rZERO
             else
               slope = (yfrom(k+1) - yfrom(k))/(xfrom(k+1) - xfrom(k))
               b1 = yfrom(k) + slope*(a1 - xfrom(k))
@@ -139,6 +137,110 @@ to_interval_loop: &
       enddo to_interval_loop
 
       end subroutine inter2
+
+      subroutine inter4(ng,xg,yg, n,x,y, FoldIn)
+!-----------------------------------------------------------------------------*
+!=  PURPOSE:                                                                 =*
+!=  Map input data given on a set of bins onto a different set of target     =*
+!=  bins.                                                                    =*
+!=  The input data are given on a set of bins (representing the integral     =*
+!=  of the input quantity over the range of each bin) and are being matched  =*
+!=  onto another set of bins (target grid).  A typical example would be an   =*
+!=  input data set spcifying the extra-terrestrial flux on wavelength inter- =*
+!=  vals, that has to be matched onto the working wavelength grid.           =*
+!=  The resulting area in a given bin of the target grid is calculated by    =*
+!=  simply adding all fractional areas of the input data that cover that     =*
+!=  particular target bin.                                                   =*
+!=  Some caution should be used near the endpoints of the grids.  If the     =*
+!=  input data do not span the full range of the target grid, the area in    =*
+!=  the "missing" bins will be assumed to be zero.  If the input data extend =*
+!=  beyond the upper limit of the target grid, the user has the option to    =*
+!=  integrate the "overhang" data and fold the remaining area back into the  =*
+!=  last target bin.  Using this option is recommended when re-gridding      =*
+!=  vertical profiles that directly affect the total optical depth of the    =*
+!=  model atmosphere.                                                        =*
+!-----------------------------------------------------------------------------*
+!=  PARAMETERS:                                                              =*
+!=  NG     - INTEGER, number of bins + 1 in the target grid               (I)=*
+!=  XG     - REAL, target grid (e.g. working wavelength grid);  bin i     (I)=*
+!=           is defined as [XG(i),XG(i+1)] (i = 1..NG-1)                     =*
+!=  YG     - REAL, y-data re-gridded onto XG;  YG(i) specifies the        (O)=*
+!=           y-value for bin i (i = 1..NG-1)                                 =*
+!=  N      - INTEGER, number of bins + 1 in the input grid                (I)=*
+!=  X      - REAL, input grid (e.g. data wavelength grid);  bin i is      (I)=*
+!=           defined as [X(i),X(i+1)] (i = 1..N-1)                           =*
+!=  Y      - REAL, input y-data on grid X;  Y(i) specifies the            (I)=*
+!=           y-value for bin i (i = 1..N-1)                                  =*
+!=  FoldIn - Switch for folding option of "overhang" data                 (I)=*
+!=           FoldIn = 0 -> No folding of "overhang" data                     =*
+!=           FoldIn = 1 -> Integerate "overhang" data and fold back into     =*
+!=                         last target bin                                   =*
+!-----------------------------------------------------------------------------*
+
+! input:
+      INTEGER(musica_ik), intent(in) :: n, ng
+      REAL(musica_dk), intent(in)    :: x(:), y(:)
+      REAL(musica_dk), intent(in)    :: xg(:)
+
+      INTEGER(musica_ik), intent(in) :: FoldIn
+
+! output:
+      REAL(musica_dk), intent(out)   :: yg(:)
+
+! local:
+      character(len=*), parameter :: Iam = 'inter4: '
+
+      REAL(musica_dk) :: a1, a2, sum
+      REAL(musica_dk) :: tail
+      INTEGER(musica_ik) :: jstart, i, j, k
+
+! check whether flag given is legal
+      IF ( FoldIn /= 0_musica_ik .AND. FoldIn /= 1_musica_ik ) THEN
+        call die_msg( 100000053, Iam//'Value for FOLDIN invalid. Must be 0 or 1' )
+      ENDIF
+
+! do interpolation
+      jstart = 1
+      do i = 1, ng - 1
+        yg(i) = rZERO
+        sum   = rZERO
+        j = jstart
+        if( j <= n-1 ) then
+          do while( x(j+1) < xg(i) )
+            jstart = j
+            j = j+1
+            IF( j > n-1 ) then
+              exit
+            endif
+          enddo
+
+          do while( (x(j) <= xg(i+1)) .and. (j <= n-1) )
+            a1 = MAX(x(j),xg(i))
+            a2 = MIN(x(j+1),xg(i+1))
+            sum = sum + y(j) * (a2-a1)
+            j = j+1
+          enddo
+          yg(i) = sum /(xg(i+1)-xg(i))
+        endif
+      enddo
+
+
+! if requested, integrate data "overhang" and fold back into last bin
+      if( FoldIn == iONE ) then
+        j = j-1
+        a1 = xg(ng)     ! upper limit of last interpolated bin
+        a2 = x(j+1)     ! upper limit of last input bin considered
+! do folding only if grids don't match up and there is more input 
+        if( a2 > a1 .or. j+1 < n ) then
+          tail = y(j) * (a2-a1)/(x(j+1)-x(j))
+          do k = j+1, n-1
+            tail = tail + y(k) * (x(k+1)-x(k))
+          enddo
+          yg(ng-1) = yg(ng-1) + tail
+        endif
+      endif
+
+      end subroutine inter4
 
       SUBROUTINE addpnt ( x, y, xnew, ynew )
 !-----------------------------------------------------------------------------*

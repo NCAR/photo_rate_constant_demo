@@ -2,36 +2,37 @@
    "photo dissociation rate constants": {
       "CH3CHO+hv->CH3+HCO": {
          "cross section": {
-            "netcdf file": "/Users/stacy/Documents/Python_dev/Sandbox/XSQY/Data/XSQY/CH3CHO_cross_section.nc",
+            "netcdf file": "Data/XSQY/CH3CHO_cross_section.nc",
             "cross section type": "base cross section"
          },
          "quantum yield": {
-            "netcdf file": "/Users/stacy/Documents/Python_dev/Sandbox/XSQY/Data/XSQY/CH3CHO_quantum_yield.nc",
+            "netcdf file": "Data/XSQY/CH3CHO_quantum_yield.nc",
             "quantum yield type": "CH3CHO+hv->CH3+HCO_qy_t"
          }
       },
       "CH3CHO+hv->CH4+CO": {
          "cross section": {
-            "netcdf file": "/Users/stacy/Documents/Python_dev/Sandbox/XSQY/Data/XSQY/CH3CHO_cross_section.nc",
+            "netcdf file": "Data/XSQY/CH3CHO_cross_section.nc",
             "cross section type": "base cross section"
          },
          "quantum yield": {
-            "netcdf file": "/Users/stacy/Documents/Python_dev/Sandbox/XSQY/Data/XSQY/CH3CHO_quantum_yield.nc",
-            "quantum yield type": "CH3CHO+hv->CH4+CO_qy_t"
+            "netcdf file": "Data/XSQY/CH3CHO_quantum_yield.nc",
+            "quantum yield type": "base quantum yield"
          }
       },
       "CH3OOH+hv->CH3O+OH": {
          "cross section": {
-            "netcdf file": "/Users/stacy/Documents/Python_dev/Sandbox/XSQY/Data/XSQY/CH3OOH_cross_section.nc",
+            "netcdf file": "Data/XSQY/CH3OOH_cross_section.nc",
             "cross section type": "base cross section"
          },
          "quantum yield": {
-            "quantum yield type": "base quantum yield"
+            "quantum yield type": "base quantum yield",
+            "quantum yield constant": 1.0
          }
       },
       "BrONO2+hv->BrO+NO2": {
          "cross section": {
-            "netcdf file": "/Users/stacy/Documents/Python_dev/Sandbox/XSQY/Data/XSQY/BrONO2_cross_section.nc",
+            "netcdf file": "Data/XSQY/BrONO2_cross_section.nc",
             "cross section type": "base cross section"
          },
          "quantum yield": {
@@ -41,12 +42,42 @@
       },
       "BrONO2+hv->Br+NO3": {
          "cross section": {
-            "netcdf file": "/Users/stacy/Documents/Python_dev/Sandbox/XSQY/Data/XSQY/BrONO2_cross_section.nc",
+            "netcdf file": "Data/XSQY/BrONO2_cross_section.nc",
             "cross section type": "base cross section"
          },
          "quantum yield": {
             "quantum yield type": "base quantum yield",
             "quantum yield constant": 0.85
+         }
+      },
+      "N2O5+hv->NO2+NO3": {
+         "cross section": {
+            "netcdf file": "Data/XSQY/N2O5_cross_section.nc",
+            "cross section type": "N2O5+hv->NO2+NO3 cross section"
+         },
+         "quantum yield": {
+            "quantum yield type": "base quantum yield",
+            "quantum yield constant": 1.0
+         },
+         "rate constant alias factor": 0.5
+      },
+      "HNO3+hv->OH+NO2": {
+         "cross section": {
+            "netcdf file": "Data/XSQY/HNO3_cross_section.nc",
+            "cross section type": "HNO3+hv->OH+NO2 cross section"
+         },
+         "quantum yield": {
+            "quantum yield type": "base quantum yield",
+            "quantum yield constant": 1.0
+         },
+      },
+      "Cl2+hv->Cl+Cl": {
+         "cross section": {
+            "cross section type": "Cl2+hv->Cl+Cl cross section"
+         },
+         "quantum yield": {
+            "quantum yield type": "base quantum yield",
+            "quantum yield constant": 1.0
          }
       }
    }
