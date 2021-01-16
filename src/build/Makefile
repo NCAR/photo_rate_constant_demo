@@ -4,25 +4,25 @@ F90    = gfortran
 LIBS   = -L$(NETCDF_DIR) -lnetcdf -lnetcdff -L$(JSONFORTRAN_LIB) -ljsonfortran -L$(NC4FORTRAN_LIB) -lnc4fortran
 INCLUDE_MODULES = -I$(NETCDF_DIR) -I$(JSONFORTRAN_INC) -I$(NC4FORTRAN_INC) 
 
-ifeq ($(FC),lf95)
+ifeq ($(F90),lf95)
   FFLAGS = --g
 else
   FFLAGS = -g
 endif
 
-ifeq ($(FC),pgf90)
+ifeq ($(F90),pgf90)
   FFLAGS += -Mnosave -Ktrap=fp
 endif
 
-ifeq ($(FC),gfortran)
+ifeq ($(F90),gfortran)
   FFLAGS += -ffree-line-length-none -fcheck=bounds,do,pointer -ffpe-trap=zero,overflow,invalid -fbacktrace
 endif
 
-ifeq ($(FC),lf95)
+ifeq ($(F90),lf95)
   FFLAGS += --nap --chk --pca --nsav --trace --trap --wide
 endif
 
-ifeq ($(FC),ifort)
+ifeq ($(F90),ifort)
   FFLAGS += -fpe0 -ftrapuv
 endif
 

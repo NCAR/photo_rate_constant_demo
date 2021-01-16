@@ -55,7 +55,7 @@ contains
       do wNdx = 1,wavelength_grid%nwave
         ex1 = 27.3_musica_dk  * exp(-99.0_musica_dk * alpha * (log(329.5_musica_dk/wc(wNdx)))**2)
         ex2 =  .932_musica_dk * exp(-91.5_musica_dk * alpha * (log(406.5_musica_dk/wc(wNdx)))**2)
-        cross_section(wNdx) = 1.e-20 * sqrt(alpha) * (ex1 + ex2)
+        cross_section(wNdx) = 1.e-20_musica_dk * sqrt(alpha) * (ex1 + ex2)
       enddo
     end associate
 
