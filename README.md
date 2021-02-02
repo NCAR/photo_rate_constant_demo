@@ -1,12 +1,20 @@
-# photo_rate_constant_demo
+# Photo Rate Constant Demo
+
 Demonstration of runtime-initialized photodecompostion rate constants in a docker container
 
 Install Docker on your machine
 
-Clone this repository and change into the resulting directory and execute the following
+Clone this repository 
+
 ```
-docker build -t photo_rate_constant_demo .
-docker run -it photo_rate_constant_demo bash
+git clone --recurse-submodules https://github.com/NCAR/photo_rate_constant_demo
+
+Change into the resulting directory and execute the following
+
+```
+cd photo_rate_constant_demo
+docker build -t photo_demo_test .
+docker run -it photo_demo_test bash
 ```
 
 Now you are in the container.
