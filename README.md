@@ -10,18 +10,22 @@ Clone this repository
 git clone --recurse-submodules https://github.com/NCAR/photo_rate_constant_demo
 ```
 
-Change into the resulting directory and execute the following
+Change into the resulting directory 
 
 ```
 cd photo_rate_constant_demo
+```
+
+Build the image and enter the container
+```
 docker build -t photo_demo_test .
 docker run -it photo_demo_test bash
 ```
 
-Now you are in the container.
+Inside the container, run the code with the TUV data
 ```
 cd photo-demo/
-./src/build/photo_rate_demo photo.config.json
+./src/build/photo_rate_demo photodecomp_rate_data/TUV/photo.config.json
 ```
 
 The expected output follows
