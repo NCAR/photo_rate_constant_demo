@@ -8,6 +8,7 @@ Clone this repository
 
 ```
 git clone --recurse-submodules https://github.com/NCAR/photo_rate_constant_demo
+```
 
 Change into the resulting directory and execute the following
 
