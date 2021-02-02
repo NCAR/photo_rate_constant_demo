@@ -2,7 +2,7 @@
 
 Demonstration of runtime-initialized photodecompostion rate constants in a docker container
 
-Install Docker on your machine
+Install [Docker](https://docs.docker.com/get-docker/) on your machine
 
 Clone this repository 
 
