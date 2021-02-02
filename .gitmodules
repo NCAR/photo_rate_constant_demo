@@ -1,0 +1,3 @@
+[submodule "photodecomp_rate_data"]
+	path = photodecomp_rate_data
+	url = https://github.com/AndrewJConley/photodecomp_rate_data
